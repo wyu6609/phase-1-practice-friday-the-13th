@@ -1,89 +1,62 @@
-//api endpoint //// global scope polluton?
+let x, y;
 const uri = "http://localhost:3000/movies";
-//movie-list-  DOM nodes
-const movieListContainer = document.getElementById("movie-list");
-// movie info display- DOM nodes
-const titleDisplay = document.getElementById("title");
-const yearReleasedDisplay = document.getElementById("year-released");
-const movieDescriptionDisplay = document.getElementById("description");
-const watchedBtn = document.getElementById("watched");
-const bloodAmt = document.getElementById("amount");
-// blood form - domNodes
-const bloodInput = document.getElementById("blood-amount");
-const bloodForm = document.getElementById("blood-form");
-//////////////////////////////////////////////////////
+fetch(uri)
+  .then((response) => response.json())
+  .then((data) => {
+    console.log("success");
 
-/////////////////
-
-function initialize(moviesJSONArr) {
-  moviesJSONArr.forEach((movieObj) => renderMovieList(movieObj));
-}
-
-function renderMovieList(movieObj) {
-  //createImageEl
-  let movieImgEl = document.createElement("img");
-  movieImgEl.id = movieObj.id; // give each IMG an id
-  movieImgEl.src = movieObj.image; // set img src to obj.image
-  movieListContainer.appendChild(movieImgEl); // add each img el to list
-  document.getElementById(movieObj.id).addEventListener("click", () => {
-    renderMovieDisplay(movieObj);
+    iterateData(data);
+    renderClickedData(data[0]);
+    x = data[0];
   });
+
+function iterateData(arrJSON) {
+  arrJSON.forEach((el) => renderMoviesList(el));
 }
 
-function renderMovieDisplay(movieObj) {
+function renderMoviesList(obj) {
+  let movieListEl = document.createElement("img");
+  movieListEl.src = obj.image;
+  movieListEl.addEventListener("click", () => {
+    x = obj;
+    console.log(x);
+    renderClickedData(x);
+  });
+  document.getElementById("movie-list").appendChild(movieListEl);
+  // movieListEl.id = `click-${obj.id}`;
+  // document.getElementById("movie-list").appendChild(movieListEl);
+
+  // document.getElementById(`click-${obj.id}`).addEventListener("click", () => {
+  //   console.log("clicked", obj.id);
+
+  // });
+}
+
+function renderClickedData(x) {
+  let watchBtn = document.getElementById("watched");
+  watchBtn.textContent = x.watched ? "watched" : "unwatched";
+  document.getElementById("title").textContent = x.title;
+  document.getElementById("detail-image").src = x.image;
+  // console.log(x.image);
+  document.getElementById("year-released").textContent = x.release_year;
+  document.getElementById("description").textContent = x.description;
+  document.getElementById("amount").textContent = x.blood_amount;
+
   ////////////////////////////////////////////////////////////////
-  titleDisplay.textContent = movieObj.title;
-  yearReleasedDisplay.textContent = movieObj.release_year;
-  movieDescriptionDisplay.textContent = movieObj.description;
-  watchedBtn.textContent = movieObj.watched ? "watched" : "Unwatched";
-  bloodAmt.textContent = movieObj.blood_amount;
-  //watch button functionality
-  watchedBtn.addEventListener("click", () => {
-    movieObj.watched = !movieObj.watched; //toggle watch
-    watchedBtn.textContent = movieObj.watched ? "watched" : "Unwatched";
-
-    patchMovieJSON(movieObj);
-  });
-
-  bloodForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    if (isNaN(bloodInput.value)) {
-      alert("Please enter a number");
-    } else {
-      movieObj.blood_amount += parseInt(bloodInput.value);
-      bloodAmt.textContent = movieObj.blood_amount;
-      patchMovieJSON(movieObj);
-    }
-  });
+  //watch btn
 }
-//fetch requests
-//fetch Get request
-function getMoviesAPI() {
-  fetch(uri)
-    .then((resp) => resp.json())
-    .then((data) => {
-      //iterate through each obj in array
-      initialize(data);
-      //render first array on load
-      renderMovieDisplay(data[0]);
-    });
-}
-//patch request
-function patchMovieJSON(movieObj) {
-  fetch(`${uri}/${movieObj.id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(movieObj),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Success:", data);
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
-}
-
-getMoviesAPI();
+document.getElementById("watched").addEventListener("click", () => {
+  ///??
+  console.log(x);
+  x.watched = !x.watched;
+  document.getElementById("watched").textContent = x.watched
+    ? "watched"
+    : "unwatched";
+});
+document.getElementById("blood-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  let inputValue = parseInt(document.getElementById("blood-amount").value);
+  x.blood_amount += inputValue;
+  console.log(x.blood_amount);
+  document.getElementById("amount").textContent = x.blood_amount;
+});
